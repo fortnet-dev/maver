@@ -72,7 +72,7 @@ controls.addEventListener("change", () => {
 })
 
 const gui = new GUI()
-gui.add({ reset: resetCamera }, "reset")
+gui.add({ "reset camera": resetCamera }, "reset camera")
 
 // Stunning Cube
 const geometry = new THREE.BoxGeometry(0.0625, 3, 0.0625)
