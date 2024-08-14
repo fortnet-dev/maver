@@ -105,7 +105,10 @@ cameraSpline.scene.scale.set(CANYON_SCALE, CANYON_SCALE, CANYON_SCALE)
 const lineSegments = cameraSpline.scene.children[0] as THREE.LineSegments | undefined
 if (!lineSegments) throw new Error("No line segments found")
 
-const flatPos = lineSegments.geometry.attributes.position.array
+const positions = lineSegments.geometry.attributes.position
+if (!positions) throw new Error("No positions found")
+
+const flatPos = positions.array
 const tempVec = new THREE.Vector3()
 const vectors: THREE.Vector3[] = []
 for (let index = 0; index < flatPos.length; index += 3) {
