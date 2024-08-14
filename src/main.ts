@@ -8,40 +8,45 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
 import { degToRad } from "three/src/math/MathUtils.js"
 
+import Stats from "three/addons/libs/stats.module.js"
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js"
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js"
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js"
+
 const CANYON_SCALE = 0.0625
 
-// Resize listener on the window
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight
-  camera.updateProjectionMatrix()
-  renderer.setSize(window.innerWidth, window.innerHeight)
-})
-
-// Scene and renderer
 const scene = new THREE.Scene()
-const renderer = new THREE.WebGLRenderer()
-renderer.setSize(window.innerWidth, window.innerHeight)
-renderer.shadowMap.enabled = true
-document.body.appendChild(renderer.domElement)
+const renderer = new THREE.WebGLRenderer({})
+const composer = new EffectComposer(renderer)
+const gui = new GUI()
 
 // Camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-)
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight)
 
 // Somthin Light
-const light = new THREE.DirectionalLight(0xffffff, 1)
-light.position.set(5, 5, 5)
-light.castShadow = true
-scene.add(light)
 
-// Light shadow settings (optional)
-light.shadow.mapSize.width = 1024
-light.shadow.mapSize.height = 1024
-light.shadow.camera.near = 0.5
-light.shadow.camera.far = 20
+const lightGroup = new THREE.Group()
+scene.add(lightGroup)
+
+const lightPos = [0, 10, 0] as const
+const light = new THREE.PointLight(0xffffff, 100e3)
+light.castShadow = true
+lightGroup.add(light)
+
+const lamp = new THREE.SphereGeometry(0.5, 32, 32)
+const lampMesh = new THREE.Mesh(lamp, new THREE.MeshBasicMaterial({ color: 0xffffff }))
+lampMesh.material = new THREE.MeshBasicMaterial({ color: 0xffffff })
+lampMesh.castShadow = true
+lampMesh.receiveShadow = true
+lightGroup.add(lampMesh)
+
+lightGroup.position.set(...lightPos)
+
+const lightGuiGroup = gui.addFolder("Light")
+lightGuiGroup.add(lightGroup.position, "x", -500, 500)
+lightGuiGroup.add(lightGroup.position, "y", 0, 500)
+lightGuiGroup.add(lightGroup.position, "z", -500, 500)
+lightGuiGroup.add(light, "intensity", 0, 100e3)
 
 const resetCamera = () => {
   camera.position.set(0, 0, 0)
@@ -70,9 +75,7 @@ controls.addEventListener("change", () => {
     zoom: camera.zoom,
   })
 })
-
-const gui = new GUI()
-gui.add({ "reset camera": resetCamera }, "reset camera")
+gui.addFolder("Camera").add({ "reset camera": resetCamera }, "reset camera")
 
 // Stunning Cube
 const geometry = new THREE.BoxGeometry(0.0625, 3, 0.0625)
@@ -123,11 +126,36 @@ const line = new THREE.Line(splineGeometry, splineMat)
 line.scale.set(CANYON_SCALE, CANYON_SCALE, CANYON_SCALE)
 scene.add(line)
 
+// --------------------------------------------------------------------------------
+
+const stats = new Stats()
+document.body.appendChild(stats.dom)
+
+composer.addPass(new RenderPass(scene, camera))
+composer.addPass(new OutputPass())
+
+renderer.shadowMap.enabled = true
+
+const resize = () => {
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  composer.setSize(window.innerWidth, window.innerHeight)
+}
+// Resize listener on the window
+resize()
+window.addEventListener("resize", resize)
+
+document.body.appendChild(renderer.domElement)
+
 function animate() {
-  renderer.render(scene, camera)
+  stats.begin()
+  // renderer.render(scene, camera)
+  composer.render()
   cube.rotation.x += 0.01
   cube.rotation.y += 0.01
   cube.rotation.z += 0.125
   controls.update()
+  stats.end()
 }
 renderer.setAnimationLoop(animate)
