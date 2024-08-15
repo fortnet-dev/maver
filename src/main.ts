@@ -11,18 +11,43 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js"
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js"
 
-const CANYON_SCALE = 0.0625
-
 const scene = new THREE.Scene()
 const renderer = new THREE.WebGLRenderer({})
 const composer = new EffectComposer(renderer)
 const gui = new GUI()
 
-scene.background = new THREE.Color(0xbf40bf)
+const CANYON_SCALE = 0.0625
+const parameters = {
+	loopDuration: 120e3,
+	targetOffset: 4e3,
+	glowColor: new THREE.Color(0xbf40bf),
+	canyonColor: new THREE.Color(0x1e49d6),
+}
+
+const paramGroupGui = gui.addFolder("Parameters")
+paramGroupGui.add(parameters, "loopDuration", 60e3, 240e3).name("Loop Duration")
+paramGroupGui.add(parameters, "targetOffset", 0, 10e3).name("Target Offset")
+
+gui
+	.addColor(parameters, "glowColor")
+	.name("Glow Color")
+	.onChange(() => {
+		scene.background = parameters.glowColor
+		scene.fog?.color.copy(parameters.glowColor)
+	})
+gui
+	.addColor(parameters, "canyonColor")
+	.name("Canyon Color")
+	.onChange(() => {
+		console.log(canyon.scene.getObjectById(0))
+	})
+
+scene.background = parameters.glowColor
+scene.fog = new THREE.Fog(parameters.glowColor, 0.01, 1000)
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
-	30,
+	10,
 	window.innerWidth / window.innerHeight,
 )
 
@@ -34,7 +59,7 @@ gui
 // Somthin Light
 
 const light = new THREE.PointLight(0xbf40bf, 10e3)
-scene.add(light)
+// scene.add(light)
 
 gui.add(light, "intensity", 0, 100e3).name("Light Intensity")
 
@@ -42,6 +67,7 @@ gui.add(light, "intensity", 0, 100e3).name("Light Intensity")
 const loader = new GLTFLoader()
 const canyon = await loader.loadAsync("/canyon.glb")
 canyon.scene.scale.set(CANYON_SCALE, CANYON_SCALE, CANYON_SCALE)
+
 scene.add(canyon.scene)
 
 // Camera path
@@ -102,15 +128,6 @@ resize()
 window.addEventListener("resize", resize)
 
 document.body.appendChild(renderer.domElement)
-
-const parameters = {
-	loopDuration: 120e3,
-	targetOffset: 3e3,
-}
-
-const paramGroupGui = gui.addFolder("Parameters")
-paramGroupGui.add(parameters, "loopDuration", 60e3, 240e3).name("Loop Duration")
-paramGroupGui.add(parameters, "targetOffset", 0, 10e3).name("Target Offset")
 
 function animate() {
 	stats.begin()
