@@ -162,17 +162,22 @@ window.addEventListener("resize", resize);
 
 document.body.appendChild(renderer.domElement);
 
-function animate(time: number) {
-  stats.begin();
-  // renderer.render(scene, camera)
-  composer.render();
+function animate() {
+  stats.begin()
 
-  // put cube on path
-  const t = ((time / 10) % vectors.length) / vectors.length;
-  const position = path.getPointAt(t);
-  cube.position.copy(position);
+  const time = Date.now()
+  const looptimeSeconds = 10e3
+  const t = (time % looptimeSeconds) / looptimeSeconds
 
-  controls.update();
-  stats.end();
+  const lightPos = path.getPointAt(t)
+  if (lightPos) lightGroup.position.copy(lightPos)
+
+  cube.rotation.x += 0.01
+  cube.rotation.y += 0.01
+  cube.rotation.z += 0.125
+
+  controls.update()
+  composer.render()
+  stats.end()
 }
 renderer.setAnimationLoop(animate);
