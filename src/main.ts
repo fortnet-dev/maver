@@ -4,15 +4,16 @@ import { gltfSplineToVector3ArrayVeryCool } from "./util"
 import * as THREE from "three"
 
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
-import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
 
-import Stats from "three/addons/libs/stats.module.js"
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js"
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js"
 
+import Stats from "three/addons/libs/stats.module.js"
+import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
+
 const scene = new THREE.Scene()
-const renderer = new THREE.WebGLRenderer({})
+const renderer = new THREE.WebGLRenderer()
 const composer = new EffectComposer(renderer)
 
 const CANYON_SCALE = 0.0625
