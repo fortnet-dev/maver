@@ -1,5 +1,5 @@
 import "./style.css"
-import { gltfSplineToVector3ArrayVeryCool } from "./util"
+import { debugLine, gltfSplineToVector3ArrayVeryCool } from "./util"
 
 import * as THREE from "three"
 
@@ -19,7 +19,7 @@ const composer = new EffectComposer(renderer)
 const parameters = {
 	loopDuration: 240e3,
 	targetOffset: 8e3,
-	fogColor: new THREE.Color("hsl(291, 100%, 50%)"),
+	fogColor: new THREE.Color("#d900ff"),
 	debugSplines: true,
 }
 
@@ -46,38 +46,22 @@ scene.add(debugGroup)
 // Camera path
 const cameraSpline = await loader.loadAsync("/camera.glb")
 const cameraVectors = gltfSplineToVector3ArrayVeryCool(cameraSpline)
+const cameraPath = new THREE.CatmullRomCurve3(cameraVectors, true)
+debugGroup.add(debugLine(cameraVectors, "#ff0000"))
 
 // Camera target path
 const targetSpline = await loader.loadAsync("/target.glb")
 const targetVectors = gltfSplineToVector3ArrayVeryCool(targetSpline)
-
-const cameraSplineGeometry = new THREE.BufferGeometry().setFromPoints(
-	cameraVectors,
-)
-const cameraSplineMat = new THREE.LineBasicMaterial({ color: 0xff0000 })
-const cameraLine = new THREE.Line(cameraSplineGeometry, cameraSplineMat)
-debugGroup.add(cameraLine)
-
-const targetSplineGeometry = new THREE.BufferGeometry().setFromPoints(
-	targetVectors,
-)
-const targetSplineMat = new THREE.LineBasicMaterial({ color: 0x00ff00 })
-const targetLine = new THREE.Line(targetSplineGeometry, targetSplineMat)
-debugGroup.add(targetLine)
+const targetPath = new THREE.CatmullRomCurve3(targetVectors, true)
+debugGroup.add(debugLine(targetVectors, "#00ff00"))
 
 const targetBall = new THREE.Mesh(
-	new THREE.SphereGeometry(0.5, 32, 32),
-	new THREE.MeshBasicMaterial({
-		color: 0x00ff00,
-	}),
+	new THREE.SphereGeometry(5, 32, 32),
+	new THREE.MeshBasicMaterial({ color: "#00ff00" }),
 )
 debugGroup.add(targetBall)
 
 debugGroup.visible = false
-
-//Add CatmullRomCurve3  😍 to follow along path
-const cameraPath = new THREE.CatmullRomCurve3(cameraVectors, true)
-const targetPath = new THREE.CatmullRomCurve3(targetVectors, true)
 
 // --------------------------------------------------------------------------------
 // Postprocessing

@@ -42,3 +42,12 @@ export const gltfSplineToVector3ArrayVeryCool = (raw: GLTF) => {
 
 	return vectors
 }
+
+export const debugLine = (
+	vectors: THREE.Vector3[],
+	color: THREE.ColorRepresentation,
+) => {
+	const geometry = new THREE.BufferGeometry().setFromPoints(vectors)
+	const material = new THREE.LineBasicMaterial({ color })
+	return new THREE.Line(geometry, material)
+}
