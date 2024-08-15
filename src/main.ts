@@ -89,12 +89,18 @@ debugGroup.visible = false
 composer.addPass(new RenderPass(scene, camera))
 composer.addPass(new OutputPass())
 
+if (renderer.getContext() instanceof WebGL2RenderingContext) {
+	composer.renderTarget1.samples = 8
+	composer.renderTarget2.samples = 8
+}
+
 scene.background = new THREE.Color("#ffffff")
 
 // --------------------------------------------------------------------------------
 // GUI
 
 const gui = new GUI()
+gui.close()
 
 gui.add(camera, "fov", 5, 50).onChange(() => camera.updateProjectionMatrix())
 
