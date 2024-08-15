@@ -1,12 +1,10 @@
 import "./style.css"
-import { ss } from "./util"
+import { gltfSplineToVector3ArrayVeryCool } from "./util"
 
 import * as THREE from "three"
 
-import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
-import { degToRad } from "three/src/math/MathUtils.js"
 
 import Stats from "three/addons/libs/stats.module.js"
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js"
@@ -20,98 +18,25 @@ const renderer = new THREE.WebGLRenderer({})
 const composer = new EffectComposer(renderer)
 const gui = new GUI()
 
+scene.background = new THREE.Color(0xbf40bf)
+
 // Camera
 const camera = new THREE.PerspectiveCamera(
-	75,
+	30,
 	window.innerWidth / window.innerHeight,
 )
 
+gui
+	.add(camera, "fov", 10, 120)
+	.name("Camera FOV")
+	.onChange(() => camera.updateProjectionMatrix())
+
 // Somthin Light
 
-const lightGroup = new THREE.Group()
-scene.add(lightGroup)
+const light = new THREE.PointLight(0xbf40bf, 10e3)
+scene.add(light)
 
-const lightPos = [0, 10, 0] as const
-const light = new THREE.PointLight(0xffffff, 100e3)
-light.castShadow = true
-lightGroup.add(light)
-
-const lamp = new THREE.SphereGeometry(0.5, 32, 32)
-const lampMesh = new THREE.Mesh(
-	lamp,
-	new THREE.MeshBasicMaterial({
-		color: 0xffffff,
-	}),
-)
-lampMesh.material = new THREE.MeshBasicMaterial({
-	color: 0xffffff,
-})
-lampMesh.castShadow = true
-lampMesh.receiveShadow = true
-lightGroup.add(lampMesh)
-
-lightGroup.position.set(...lightPos)
-
-const lightGuiGroup = gui.addFolder("Light")
-lightGuiGroup.add(lightGroup.position, "x", -500, 500)
-lightGuiGroup.add(lightGroup.position, "y", 0, 500)
-lightGuiGroup.add(lightGroup.position, "z", -500, 500)
-lightGuiGroup.add(light, "intensity", 0, 100e3)
-
-const resetCamera = () => {
-	camera.position.set(0, 0, 0)
-	camera.rotation.set(0, 0, 0)
-
-	camera.rotation.x = degToRad(-90)
-	camera.position.y = 500
-}
-
-// Saved camera state
-const savedCameraState = ss("camera-state")
-if (savedCameraState) {
-	camera.position.fromArray(savedCameraState.position)
-	camera.rotation.fromArray(savedCameraState.rotation)
-	camera.zoom = savedCameraState.zoom
-} else {
-	resetCamera()
-}
-
-// Camera controls
-const controls = new OrbitControls(camera, renderer.domElement)
-controls.addEventListener("change", () => {
-	ss("camera-state", {
-		position: camera.position.toArray(),
-		rotation: camera.rotation.toArray(),
-		zoom: camera.zoom,
-	})
-})
-gui.addFolder("Camera").add(
-	{
-		"reset camera": resetCamera,
-	},
-	"reset camera",
-)
-
-// Stunning Cube
-const geometry = new THREE.BoxGeometry(30, 30, 30)
-const material = new THREE.MeshBasicMaterial({
-	color: 0xff00ff,
-})
-const cube = new THREE.Mesh(geometry, material)
-cube.castShadow = true
-cube.receiveShadow = true
-scene.add(cube)
-
-// Ground Plane (for shadow casting)
-const planeGeometry = new THREE.PlaneGeometry(10, 10)
-const planeMaterial = new THREE.MeshStandardMaterial({
-	color: 0x888888,
-})
-const plane = new THREE.Mesh(planeGeometry, planeMaterial)
-plane.rotation.x = -Math.PI / 2
-plane.position.y = -2
-plane.receiveShadow = true
-scene.add(plane)
+gui.add(light, "intensity", 0, 100e3).name("Light Intensity")
 
 // Canyon
 const loader = new GLTFLoader()
@@ -121,44 +46,45 @@ scene.add(canyon.scene)
 
 // Camera path
 const cameraSpline = await loader.loadAsync("/camera.glb")
-cameraSpline.scene.scale.set(CANYON_SCALE, CANYON_SCALE, CANYON_SCALE)
-// scene.add(cameraSpline.scene)
+const cameraVectors = gltfSplineToVector3ArrayVeryCool(
+	cameraSpline,
+	CANYON_SCALE,
+)
 
-const lineSegments = cameraSpline.scene.children[0] as
-	| THREE.LineSegments
-	| undefined
-if (!lineSegments) throw new Error("No line segments found")
+// Camera target path
+const targetSpline = await loader.loadAsync("/target.glb")
+const targetVectors = gltfSplineToVector3ArrayVeryCool(
+	targetSpline,
+	CANYON_SCALE,
+)
 
-const positions = lineSegments.geometry.attributes.position
-if (!positions) throw new Error("No positions found")
+const cameraSplineGeometry = new THREE.BufferGeometry().setFromPoints(
+	cameraVectors,
+)
+const cameraSplineMat = new THREE.LineBasicMaterial({ color: 0xff0000 })
+const cameraLine = new THREE.Line(cameraSplineGeometry, cameraSplineMat)
+scene.add(cameraLine)
 
-const flatPos = positions.array
-const tempVec = new THREE.Vector3()
-const vectors: THREE.Vector3[] = []
-for (let index = 0; index < flatPos.length; index += 3) {
-	tempVec.fromArray(flatPos, index)
-	tempVec.applyMatrix4(lineSegments.matrixWorld)
-	vectors.push(tempVec.clone())
-}
+const targetSplineGeometry = new THREE.BufferGeometry().setFromPoints(
+	targetVectors,
+)
+const targetSplineMat = new THREE.LineBasicMaterial({ color: 0x00ff00 })
+const targetLine = new THREE.Line(targetSplineGeometry, targetSplineMat)
+scene.add(targetLine)
 
-const splineGeometry = new THREE.BufferGeometry().setFromPoints(vectors)
-const splineMat = new THREE.LineBasicMaterial({
-	color: 0xff0000,
-})
-const line = new THREE.Line(splineGeometry, splineMat)
-line.scale.set(CANYON_SCALE, CANYON_SCALE, CANYON_SCALE)
-scene.add(line)
+const targetBall = new THREE.Mesh(
+	new THREE.SphereGeometry(0.5, 32, 32),
+	new THREE.MeshBasicMaterial({
+		color: 0x00ff00,
+	}),
+)
+scene.add(targetBall)
 
 //Add CatmullRomCurve3  😍 to follow along path
-const scaledPoints = vectors.map((vector) =>
-	vector.clone().multiplyScalar(CANYON_SCALE),
-)
-const path = new THREE.CatmullRomCurve3(scaledPoints, true)
+const cameraPath = new THREE.CatmullRomCurve3(cameraVectors, true)
+const targetPath = new THREE.CatmullRomCurve3(targetVectors, true)
 
 // --------------------------------------------------------------------------------
-
-const stats = new Stats()
-document.body.appendChild(stats.dom)
 
 composer.addPass(new RenderPass(scene, camera))
 composer.addPass(new OutputPass())
@@ -177,22 +103,37 @@ window.addEventListener("resize", resize)
 
 document.body.appendChild(renderer.domElement)
 
+const parameters = {
+	loopDuration: 120e3,
+	targetOffset: 3e3,
+}
+
+const paramGroupGui = gui.addFolder("Parameters")
+paramGroupGui.add(parameters, "loopDuration", 60e3, 240e3).name("Loop Duration")
+paramGroupGui.add(parameters, "targetOffset", 0, 10e3).name("Target Offset")
+
 function animate() {
 	stats.begin()
 
 	const time = Date.now()
-	const looptimeSeconds = 10e3
-	const t = (time % looptimeSeconds) / looptimeSeconds
+	const looptimeSeconds = parameters.loopDuration
+	const cameraTime = (time % looptimeSeconds) / looptimeSeconds
+	const targetTime =
+		((time + parameters.targetOffset) % looptimeSeconds) / looptimeSeconds
 
-	const lightPos = path.getPointAt(t)
-	if (lightPos) lightGroup.position.copy(lightPos)
+	const cameraPos = cameraPath.getPointAt(cameraTime)
+	camera.position.copy(cameraPos)
+	light.position.copy(cameraPos)
 
-	cube.rotation.x += 0.01
-	cube.rotation.y += 0.01
-	cube.rotation.z += 0.125
+	const targetPos = targetPath.getPointAt(targetTime)
+	targetBall.position.copy(targetPos)
+	camera.lookAt(targetPos)
 
-	controls.update()
 	composer.render()
 	stats.end()
 }
+
+const stats = new Stats()
+document.body.appendChild(stats.dom)
+
 renderer.setAnimationLoop(animate)
