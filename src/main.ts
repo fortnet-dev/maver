@@ -27,7 +27,7 @@ const parameters = {
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
-	16,
+	13,
 	window.innerWidth / window.innerHeight,
 	0.1,
 	15e3,
@@ -97,7 +97,7 @@ scene.background = new THREE.Color("#ffffff")
 
 const gui = new GUI()
 
-gui.add(camera, "fov", 10, 120).onChange(() => camera.updateProjectionMatrix())
+gui.add(camera, "fov", 5, 50).onChange(() => camera.updateProjectionMatrix())
 
 gui.add(parameters, "loopDuration", 10e3, 480e3).name("loop duration")
 gui.add(parameters, "targetOffset", 0, 0.1).name("target offset")
