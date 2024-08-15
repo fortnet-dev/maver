@@ -150,12 +150,20 @@ document.body.appendChild(renderer.domElement)
 
 function animate() {
   stats.begin()
-  // renderer.render(scene, camera)
-  composer.render()
+
+  const time = Date.now()
+  const looptimeSeconds = 10e3
+  const t = (time % looptimeSeconds) / looptimeSeconds
+
+  const lightPos = vectors[Math.floor(t * vectors.length)]
+  if (lightPos) lightGroup.position.copy(lightPos.multiplyScalar(CANYON_SCALE))
+
   cube.rotation.x += 0.01
   cube.rotation.y += 0.01
   cube.rotation.z += 0.125
+
   controls.update()
+  composer.render()
   stats.end()
 }
 renderer.setAnimationLoop(animate)
