@@ -20,14 +20,13 @@ const composer = new EffectComposer(renderer)
 
 const parameters = {
 	loopDuration: 240e3,
-	targetOffset: 0.05,
-	fogColor: new THREE.Color("#ffffff"),
+	targetOffset: 0.06,
 	debugSplines: true,
 }
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
-	13,
+	14,
 	window.innerWidth / window.innerHeight,
 	0.1,
 	15e3,
@@ -42,12 +41,12 @@ const canyon = await loader.loadAsync("/canyon.glb")
 scene.add(canyon.scene)
 
 const canyonUniforms = {
-	fogColorNear: { value: new THREE.Color("#0f0027") },
-	fogColorMid: { value: new THREE.Color("#a400a2") },
+	fogColorNear: { value: new THREE.Color("#080041") },
+	fogColorMid: { value: new THREE.Color("#b300b0") },
 	fogColorFar: { value: new THREE.Color("#ffffff") },
-	fogNear: { value: 1000 },
-	fogMid: { value: 5000 },
-	fogFar: { value: 20e3 },
+	fogNear: { value: 666 },
+	fogMid: { value: 3000 },
+	fogFar: { value: 10e3 },
 }
 
 const canyonMaterial = new THREE.ShaderMaterial({
@@ -109,9 +108,9 @@ const canUni = canyonMaterial.uniforms as typeof canyonUniforms
 guiMeshFog.addColor(canUni.fogColorNear, "value").name("fog color near")
 guiMeshFog.addColor(canUni.fogColorMid, "value").name("fog color mid")
 guiMeshFog.addColor(canUni.fogColorFar, "value").name("fog color far")
-guiMeshFog.add(canUni.fogNear, "value", 0, 5e3).name("fog near")
-guiMeshFog.add(canUni.fogMid, "value", 0, 12e3).name("fog midpoint")
-guiMeshFog.add(canUni.fogFar, "value", 0, 32e3).name("fog far")
+guiMeshFog.add(canUni.fogNear, "value", 0, 15e3).name("fog near")
+guiMeshFog.add(canUni.fogMid, "value", 0, 15e3).name("fog midpoint")
+guiMeshFog.add(canUni.fogFar, "value", 0, 15e3).name("fog far")
 
 // --------------------------------------------------------------------------------
 // Animation
