@@ -1,5 +1,7 @@
 import "./style.css"
+
 import { debugLine, gltfSplineToVector3ArrayVeryCool } from "./util"
+import { canyonFragmentShader, canyonVertexShader } from "./vertexShader"
 
 import * as THREE from "three"
 
@@ -19,16 +21,16 @@ const composer = new EffectComposer(renderer)
 const parameters = {
 	loopDuration: 240e3,
 	targetOffset: 8e3,
-	fogColor: new THREE.Color("#d900ff"),
+	fogColor: new THREE.Color("#ffffff"),
 	debugSplines: true,
 }
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
-	22,
+	16,
 	window.innerWidth / window.innerHeight,
-	1,
-	10e3,
+	0.1,
+	15e3,
 )
 
 // --------------------------------------------------------------------------------
@@ -37,8 +39,27 @@ const camera = new THREE.PerspectiveCamera(
 // Canyon
 const loader = new GLTFLoader()
 const canyon = await loader.loadAsync("/canyon.glb")
-
 scene.add(canyon.scene)
+
+const canyonUniforms = {
+	fogColorNear: { value: new THREE.Color("#000323") },
+	fogColorMid: { value: new THREE.Color("#a400a2") },
+	fogColorFar: { value: new THREE.Color("#ffffff") },
+	fogNear: { value: 1000 },
+	fogMid: { value: 5000 },
+	fogFar: { value: 20e3 },
+}
+
+const canyonMaterial = new THREE.ShaderMaterial({
+	uniforms: canyonUniforms,
+	vertexShader: canyonVertexShader,
+	fragmentShader: canyonFragmentShader,
+})
+
+const canyonMesh = canyon.scene.children[0] as THREE.Mesh | undefined
+if (canyonMesh?.material instanceof THREE.MeshStandardMaterial) {
+	canyonMesh.material = canyonMaterial
+}
 
 const debugGroup = new THREE.Group()
 scene.add(debugGroup)
@@ -69,10 +90,7 @@ debugGroup.visible = false
 composer.addPass(new RenderPass(scene, camera))
 composer.addPass(new OutputPass())
 
-renderer.shadowMap.enabled = true
-
-scene.background = parameters.fogColor
-scene.fog = new THREE.Fog(parameters.fogColor, 500, 10e3)
+scene.background = new THREE.Color("#ffffff")
 
 // --------------------------------------------------------------------------------
 // GUI
@@ -81,19 +99,19 @@ const gui = new GUI()
 
 gui.add(camera, "fov", 10, 120).onChange(() => camera.updateProjectionMatrix())
 
-gui.add(parameters, "loopDuration", 120e3, 480e3).name("Loop Duration")
-gui.add(parameters, "targetOffset", 6e3, 12e3).name("Target Offset")
-
-gui.addColor(parameters, "fogColor").onChange(() => {
-	scene.background = parameters.fogColor
-	scene.fog?.color.copy(parameters.fogColor)
-})
+gui.add(parameters, "loopDuration", 120e3, 480e3).name("loop duration")
+gui.add(parameters, "targetOffset", 6e3, 12e3).name("target offset")
 
 gui.add(debugGroup, "visible").name("debug splines")
 
-const guiFog = gui.addFolder("Fog")
-guiFog.add(scene.fog, "far", 5e3, 20e3)
-guiFog.add(scene.fog, "near", 500, 5e3)
+const guiMeshFog = gui.addFolder("Mesh Shader Fog")
+const canUni = canyonMaterial.uniforms as typeof canyonUniforms
+guiMeshFog.addColor(canUni.fogColorNear, "value").name("fog color near")
+guiMeshFog.addColor(canUni.fogColorMid, "value").name("fog color mid")
+guiMeshFog.addColor(canUni.fogColorFar, "value").name("fog color far")
+guiMeshFog.add(canUni.fogNear, "value", 0, 5e3).name("fog near")
+guiMeshFog.add(canUni.fogMid, "value", 0, 12e3).name("fog midpoint")
+guiMeshFog.add(canUni.fogFar, "value", 0, 32e3).name("fog far")
 
 // --------------------------------------------------------------------------------
 // Animation
