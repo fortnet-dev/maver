@@ -119,7 +119,7 @@ guiMeshFog.add(canUni.fogFar, "value", 0, 32e3).name("fog far")
 function animate() {
 	stats.begin()
 
-	const time = performance.now()
+	const time = Date.now()
 	const looptimeSeconds = parameters.loopDuration
 	const cameraTime = (time % looptimeSeconds) / looptimeSeconds
 	const targetTime = (cameraTime + parameters.targetOffset) % 1
