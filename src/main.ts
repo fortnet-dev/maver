@@ -79,6 +79,8 @@ const targetBall = new THREE.Mesh(
 )
 debugGroup.add(targetBall)
 
+debugGroup.visible = false
+
 //Add CatmullRomCurve3  😍 to follow along path
 const cameraPath = new THREE.CatmullRomCurve3(cameraVectors, true)
 const targetPath = new THREE.CatmullRomCurve3(targetVectors, true)
@@ -92,36 +94,28 @@ composer.addPass(new OutputPass())
 renderer.shadowMap.enabled = true
 
 scene.background = parameters.fogColor
-scene.fog = new THREE.Fog(parameters.fogColor, 0.01, 1000)
+scene.fog = new THREE.Fog(parameters.fogColor, 50, 1000)
 
 // --------------------------------------------------------------------------------
 // GUI
 
 const gui = new GUI()
 
-gui
-	.add(camera, "fov", 10, 120)
-	.name("Camera FOV")
-	.onChange(() => camera.updateProjectionMatrix())
+gui.add(camera, "fov", 10, 120).onChange(() => camera.updateProjectionMatrix())
 
-const paramGroupGui = gui.addFolder("Parameters")
-paramGroupGui.add(parameters, "loopDuration", 60e3, 240e3).name("Loop Duration")
-paramGroupGui.add(parameters, "targetOffset", 0, 10e3).name("Target Offset")
+gui.add(parameters, "loopDuration", 60e3, 240e3).name("Loop Duration")
+gui.add(parameters, "targetOffset", 0, 10e3).name("Target Offset")
 
-gui
-	.addColor(parameters, "fogColor")
-	.name("Glow Color")
-	.onChange(() => {
-		scene.background = parameters.fogColor
-		scene.fog?.color.copy(parameters.fogColor)
-	})
+gui.addColor(parameters, "fogColor").onChange(() => {
+	scene.background = parameters.fogColor
+	scene.fog?.color.copy(parameters.fogColor)
+})
 
-gui
-	.add(parameters, "debugSplines")
-	.name("Debug Splines")
-	.onChange(() => {
-		debugGroup.visible = parameters.debugSplines
-	})
+gui.add(debugGroup, "visible").name("debug splines")
+
+const guiFog = gui.addFolder("Fog")
+guiFog.add(scene.fog, "far", 100, 2000)
+guiFog.add(scene.fog, "near", 0, 1000)
 
 // --------------------------------------------------------------------------------
 // Animation
