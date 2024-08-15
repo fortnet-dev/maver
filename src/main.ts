@@ -24,7 +24,6 @@ const parameters = {
 	debugSplines: true,
 }
 
-// Camera
 const camera = new THREE.PerspectiveCamera(
 	14,
 	window.innerWidth / window.innerHeight,
@@ -89,6 +88,7 @@ debugGroup.visible = false
 composer.addPass(new RenderPass(scene, camera))
 composer.addPass(new OutputPass())
 
+// Antialiasing
 if (renderer.getContext() instanceof WebGL2RenderingContext) {
 	composer.renderTarget1.samples = 8
 	composer.renderTarget2.samples = 8
