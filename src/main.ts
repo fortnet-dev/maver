@@ -20,7 +20,7 @@ const composer = new EffectComposer(renderer)
 
 const parameters = {
 	loopDuration: 240e3,
-	targetOffset: 8e3,
+	targetOffset: 0.05,
 	fogColor: new THREE.Color("#ffffff"),
 	debugSplines: true,
 }
@@ -42,7 +42,7 @@ const canyon = await loader.loadAsync("/canyon.glb")
 scene.add(canyon.scene)
 
 const canyonUniforms = {
-	fogColorNear: { value: new THREE.Color("#000323") },
+	fogColorNear: { value: new THREE.Color("#0f0027") },
 	fogColorMid: { value: new THREE.Color("#a400a2") },
 	fogColorFar: { value: new THREE.Color("#ffffff") },
 	fogNear: { value: 1000 },
@@ -99,8 +99,8 @@ const gui = new GUI()
 
 gui.add(camera, "fov", 10, 120).onChange(() => camera.updateProjectionMatrix())
 
-gui.add(parameters, "loopDuration", 120e3, 480e3).name("loop duration")
-gui.add(parameters, "targetOffset", 6e3, 12e3).name("target offset")
+gui.add(parameters, "loopDuration", 10e3, 480e3).name("loop duration")
+gui.add(parameters, "targetOffset", 0, 0.1).name("target offset")
 
 gui.add(debugGroup, "visible").name("debug splines")
 
@@ -122,8 +122,7 @@ function animate() {
 	const time = performance.now()
 	const looptimeSeconds = parameters.loopDuration
 	const cameraTime = (time % looptimeSeconds) / looptimeSeconds
-	const targetTime =
-		((time + parameters.targetOffset) % looptimeSeconds) / looptimeSeconds
+	const targetTime = (cameraTime + parameters.targetOffset) % 1
 
 	const cameraPos = cameraPath.getPointAt(cameraTime)
 	camera.position.copy(cameraPos)
