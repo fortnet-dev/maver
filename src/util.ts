@@ -24,7 +24,7 @@ export function ss<L extends keyof Stored>(
 		: JSON.parse(sessionStorage.getItem(`maver-${key}`) as string)
 }
 
-export const gltfSplineToVector3ArrayVeryCool = (raw: GLTF, scale = 1) => {
+export const gltfSplineToVector3ArrayVeryCool = (raw: GLTF) => {
 	const lineSegments = raw.scene.children[0] as THREE.LineSegments | undefined
 	if (!lineSegments) throw new Error("No line segments found")
 
@@ -40,5 +40,5 @@ export const gltfSplineToVector3ArrayVeryCool = (raw: GLTF, scale = 1) => {
 		vectors.push(tempVec.clone())
 	}
 
-	return vectors.map((vector) => vector.multiplyScalar(scale))
+	return vectors
 }

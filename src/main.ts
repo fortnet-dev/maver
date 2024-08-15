@@ -16,10 +16,9 @@ const scene = new THREE.Scene()
 const renderer = new THREE.WebGLRenderer()
 const composer = new EffectComposer(renderer)
 
-const CANYON_SCALE = 0.0625
 const parameters = {
-	loopDuration: 120e3,
-	targetOffset: 4e3,
+	loopDuration: 240e3,
+	targetOffset: 8e3,
 	fogColor: new THREE.Color("hsl(291, 100%, 50%)"),
 	debugSplines: true,
 }
@@ -28,6 +27,8 @@ const parameters = {
 const camera = new THREE.PerspectiveCamera(
 	22,
 	window.innerWidth / window.innerHeight,
+	1,
+	10e3,
 )
 
 // --------------------------------------------------------------------------------
@@ -36,7 +37,6 @@ const camera = new THREE.PerspectiveCamera(
 // Canyon
 const loader = new GLTFLoader()
 const canyon = await loader.loadAsync("/canyon.glb")
-canyon.scene.scale.set(CANYON_SCALE, CANYON_SCALE, CANYON_SCALE)
 
 scene.add(canyon.scene)
 
@@ -45,17 +45,11 @@ scene.add(debugGroup)
 
 // Camera path
 const cameraSpline = await loader.loadAsync("/camera.glb")
-const cameraVectors = gltfSplineToVector3ArrayVeryCool(
-	cameraSpline,
-	CANYON_SCALE,
-)
+const cameraVectors = gltfSplineToVector3ArrayVeryCool(cameraSpline)
 
 // Camera target path
 const targetSpline = await loader.loadAsync("/target.glb")
-const targetVectors = gltfSplineToVector3ArrayVeryCool(
-	targetSpline,
-	CANYON_SCALE,
-)
+const targetVectors = gltfSplineToVector3ArrayVeryCool(targetSpline)
 
 const cameraSplineGeometry = new THREE.BufferGeometry().setFromPoints(
 	cameraVectors,
@@ -94,7 +88,7 @@ composer.addPass(new OutputPass())
 renderer.shadowMap.enabled = true
 
 scene.background = parameters.fogColor
-scene.fog = new THREE.Fog(parameters.fogColor, 50, 1000)
+scene.fog = new THREE.Fog(parameters.fogColor, 500, 10e3)
 
 // --------------------------------------------------------------------------------
 // GUI
@@ -103,8 +97,8 @@ const gui = new GUI()
 
 gui.add(camera, "fov", 10, 120).onChange(() => camera.updateProjectionMatrix())
 
-gui.add(parameters, "loopDuration", 60e3, 240e3).name("Loop Duration")
-gui.add(parameters, "targetOffset", 0, 10e3).name("Target Offset")
+gui.add(parameters, "loopDuration", 120e3, 480e3).name("Loop Duration")
+gui.add(parameters, "targetOffset", 6e3, 12e3).name("Target Offset")
 
 gui.addColor(parameters, "fogColor").onChange(() => {
 	scene.background = parameters.fogColor
@@ -114,8 +108,8 @@ gui.addColor(parameters, "fogColor").onChange(() => {
 gui.add(debugGroup, "visible").name("debug splines")
 
 const guiFog = gui.addFolder("Fog")
-guiFog.add(scene.fog, "far", 100, 2000)
-guiFog.add(scene.fog, "near", 0, 1000)
+guiFog.add(scene.fog, "far", 5e3, 20e3)
+guiFog.add(scene.fog, "near", 500, 5e3)
 
 // --------------------------------------------------------------------------------
 // Animation
