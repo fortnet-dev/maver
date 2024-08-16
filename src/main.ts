@@ -13,6 +13,7 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js"
 
 import Stats from "three/addons/libs/stats.module.js"
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
+import { type Preset, applyPreset, presets } from "./presets"
 
 const scene = new THREE.Scene()
 const renderer = new THREE.WebGLRenderer()
@@ -47,17 +48,9 @@ const canyonUniforms = {
 	fogMid: { value: 3000 },
 	fogFar: { value: 10e3 },
 }
+export type CanyonUniforms = typeof canyonUniforms
 
-// canyonUniforms.fogColorNear.value = new DangColor("#060415")
-// canyonUniforms.fogColorMid.value = new DangColor("#fdffa3")
-// canyonUniforms.fogColorFar.value = new DangColor("#0d0a0f")
-// canyonUniforms.fogNear.value = 1000
-// canyonUniforms.fogMid.value = 5500
-// canyonUniforms.fogFar.value = 8000
-
-// canyonUniforms.fogColorNear.value = new DangColor("#050315")
-// canyonUniforms.fogColorMid.value = new DangColor("#5d3243")
-// canyonUniforms.fogColorFar.value = new DangColor("#0d090f")
+// applyPreset("nightlight", canyonUniforms)
 
 renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 
@@ -113,7 +106,13 @@ scene.background = canyonUniforms.fogColorFar.value
 // GUI
 
 const gui = new GUI()
-gui.close()
+// gui.close()
+
+gui
+	.add({ preset: "default" }, "preset", [...Object.keys(presets)])
+	.onChange((value) => {
+		applyPreset(value as Preset, canyonUniforms)
+	})
 
 gui.add(camera, "fov", 5, 50).onChange(() => camera.updateProjectionMatrix())
 
@@ -123,7 +122,7 @@ gui.add(parameters, "targetOffset", 0, 0.1).name("target offset")
 gui.add(debugGroup, "visible").name("debug splines")
 
 const guiMeshFog = gui.addFolder("Mesh Shader Fog")
-const canUni = canyonMaterial.uniforms as typeof canyonUniforms
+const canUni = canyonMaterial.uniforms as CanyonUniforms
 guiMeshFog.add(canUni.fogNear, "value", 0, 15e3).name("fog near")
 guiMeshFog.add(canUni.fogMid, "value", 0, 15e3).name("fog midpoint")
 guiMeshFog.add(canUni.fogFar, "value", 0, 15e3).name("fog far")
