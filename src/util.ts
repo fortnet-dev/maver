@@ -51,3 +51,11 @@ export const debugLine = (
 	const material = new THREE.LineBasicMaterial({ color })
 	return new THREE.Line(geometry, material)
 }
+
+/** just show the same dang color!!! */
+export class DangColor extends THREE.Color {
+	constructor(color?: THREE.ColorRepresentation) {
+		super(color)
+		this.convertLinearToSRGB()
+	}
+}

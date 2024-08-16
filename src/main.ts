@@ -1,6 +1,6 @@
 import "./style.css"
 
-import { debugLine, gltfSplineToVector3ArrayVeryCool } from "./util"
+import { DangColor, debugLine, gltfSplineToVector3ArrayVeryCool } from "./util"
 import { canyonFragmentShader, canyonVertexShader } from "./vertexShader"
 
 import * as THREE from "three"
@@ -40,13 +40,26 @@ const canyon = await loader.loadAsync("/canyon.glb")
 scene.add(canyon.scene)
 
 const canyonUniforms = {
-	fogColorNear: { value: new THREE.Color("#080041") },
-	fogColorMid: { value: new THREE.Color("#b300b0") },
-	fogColorFar: { value: new THREE.Color("#ffffff") },
+	fogColorNear: { value: new DangColor("#080041") },
+	fogColorMid: { value: new DangColor("#b300b0") },
+	fogColorFar: { value: new DangColor("#ffffff") },
 	fogNear: { value: 666 },
 	fogMid: { value: 3000 },
 	fogFar: { value: 10e3 },
 }
+
+// canyonUniforms.fogColorNear.value = new DangColor("#060415")
+// canyonUniforms.fogColorMid.value = new DangColor("#fdffa3")
+// canyonUniforms.fogColorFar.value = new DangColor("#0d0a0f")
+// canyonUniforms.fogNear.value = 1000
+// canyonUniforms.fogMid.value = 5500
+// canyonUniforms.fogFar.value = 8000
+
+// canyonUniforms.fogColorNear.value = new DangColor("#050315")
+// canyonUniforms.fogColorMid.value = new DangColor("#5d3243")
+// canyonUniforms.fogColorFar.value = new DangColor("#0d090f")
+
+renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 
 const canyonMaterial = new THREE.ShaderMaterial({
 	uniforms: canyonUniforms,
@@ -94,7 +107,7 @@ if (renderer.getContext() instanceof WebGL2RenderingContext) {
 	composer.renderTarget2.samples = 8
 }
 
-scene.background = new THREE.Color("#ffffff")
+scene.background = canyonUniforms.fogColorFar.value
 
 // --------------------------------------------------------------------------------
 // GUI
@@ -111,9 +124,6 @@ gui.add(debugGroup, "visible").name("debug splines")
 
 const guiMeshFog = gui.addFolder("Mesh Shader Fog")
 const canUni = canyonMaterial.uniforms as typeof canyonUniforms
-guiMeshFog.addColor(canUni.fogColorNear, "value").name("fog color near")
-guiMeshFog.addColor(canUni.fogColorMid, "value").name("fog color mid")
-guiMeshFog.addColor(canUni.fogColorFar, "value").name("fog color far")
 guiMeshFog.add(canUni.fogNear, "value", 0, 15e3).name("fog near")
 guiMeshFog.add(canUni.fogMid, "value", 0, 15e3).name("fog midpoint")
 guiMeshFog.add(canUni.fogFar, "value", 0, 15e3).name("fog far")
