@@ -117,6 +117,14 @@ guiMeshFog.addColor(canUni.fogColorFar, "value").name("fog color far")
 guiMeshFog.add(canUni.fogNear, "value", 0, 15e3).name("fog near")
 guiMeshFog.add(canUni.fogMid, "value", 0, 15e3).name("fog midpoint")
 guiMeshFog.add(canUni.fogFar, "value", 0, 15e3).name("fog far")
+guiMeshFog.addColor(canUni.fogColorNear, "value").name("fog color near")
+guiMeshFog.addColor(canUni.fogColorMid, "value").name("fog color mid")
+guiMeshFog
+	.addColor(canUni.fogColorFar, "value")
+	.name("fog color far")
+	.onChange(() => {
+		scene.background = canUni.fogColorFar.value
+	})
 
 // --------------------------------------------------------------------------------
 // Animation
