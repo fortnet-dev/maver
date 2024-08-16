@@ -29,6 +29,14 @@ export const presets = {
 		uniforms.fogColorFar.value = new DangColor("#0d090f")
 		darkFog(uniforms)
 	},
+	sonoma: (uniforms: CanyonUniforms) => {
+		uniforms.fogColorNear.value = new DangColor("#55164c")
+		uniforms.fogColorMid.value = new DangColor("#1d471a")
+		uniforms.fogColorFar.value = new DangColor("#fcff47")
+		uniforms.fogNear.value = 666
+		uniforms.fogMid.value = 3200
+		uniforms.fogFar.value = 8000
+	},
 } as const
 
 export type Preset = keyof typeof presets
