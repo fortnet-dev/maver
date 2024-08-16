@@ -50,8 +50,6 @@ const canyonUniforms = {
 }
 export type CanyonUniforms = typeof canyonUniforms
 
-// applyPreset("nightlight", canyonUniforms)
-
 renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 
 const canyonMaterial = new THREE.ShaderMaterial({

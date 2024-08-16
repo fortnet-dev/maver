@@ -37,6 +37,14 @@ export const presets = {
 		uniforms.fogMid.value = 3200
 		uniforms.fogFar.value = 8000
 	},
+	ventura: (uniforms: CanyonUniforms) => {
+		uniforms.fogColorNear.value = new DangColor("#270642")
+		uniforms.fogColorMid.value = new DangColor("#944700")
+		uniforms.fogColorFar.value = new DangColor("#ffb83d")
+		uniforms.fogNear.value = 666
+		uniforms.fogMid.value = 2000
+		uniforms.fogFar.value = 6000
+	},
 } as const
 
 export type Preset = keyof typeof presets
