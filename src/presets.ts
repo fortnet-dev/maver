@@ -1,3 +1,4 @@
+import type { Scene } from "three"
 import type { CanyonUniforms } from "./main"
 import { DangColor } from "./util"
 
@@ -32,6 +33,11 @@ export const presets = {
 
 export type Preset = keyof typeof presets
 
-export const applyPreset = (name: Preset, uniforms: CanyonUniforms) => {
-	return presets[name](uniforms)
+export const applyPreset = (
+	name: Preset,
+	uniforms: CanyonUniforms,
+	scene: Scene,
+) => {
+	presets[name](uniforms)
+	scene.background = uniforms.fogColorFar.value
 }

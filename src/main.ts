@@ -111,7 +111,7 @@ const gui = new GUI()
 gui
 	.add({ preset: "default" }, "preset", [...Object.keys(presets)])
 	.onChange((value) => {
-		applyPreset(value as Preset, canyonUniforms)
+		applyPreset(value as Preset, canyonUniforms, scene)
 	})
 
 gui.add(camera, "fov", 5, 50).onChange(() => camera.updateProjectionMatrix())
