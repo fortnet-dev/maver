@@ -86,6 +86,9 @@ debugGroup.add(targetBall)
 
 debugGroup.visible = false
 
+const shaderlessLight = new THREE.DirectionalLight(0xffffff, 1)
+shaderlessLight.position.set(0, 100, 0)
+
 // --------------------------------------------------------------------------------
 // Postprocessing
 
@@ -131,6 +134,20 @@ guiMeshFog
 	.name("fog color far")
 	.onChange(() => {
 		scene.background = canUni.fogColorFar.value
+	})
+
+guiMeshFog
+	.add({ disableShader: false }, "disableShader")
+	.onChange((disable) => {
+		if (canyonMesh?.material) {
+			if (disable) {
+				canyonMesh.material = new THREE.MeshStandardMaterial()
+				scene.add(shaderlessLight)
+			} else {
+				canyonMesh.material = canyonMaterial
+				scene.remove(shaderlessLight)
+			}
+		}
 	})
 
 // --------------------------------------------------------------------------------
